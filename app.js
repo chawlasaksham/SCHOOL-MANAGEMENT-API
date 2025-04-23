@@ -2,18 +2,10 @@ require('dotenv').config();
 const express = require('express');
 const mysql = require('mysql2');
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 app.use(express.json());
-console.log('DB CONFIG:', {
-  host: process.env.MYSQL_HOST,
-  port: process.env.MYSQL_PORT,
-  user: process.env.MYSQL_USER,
-  password: process.env.MYSQL_PASSWORD,
-  database: process.env.MYSQL_DATABASE
-});
 
-// MySQL connection
 const db = mysql.createConnection({
   host: process.env.MYSQL_HOST,
   port: process.env.MYSQL_PORT,
@@ -24,18 +16,18 @@ const db = mysql.createConnection({
 
 db.connect(err => {
   if (err) {
-    console.error('Insert Error:', err); 
-    return res.status(500).json({ error: 'DB Error' });
+    console.error('Insert Error:', err);
+    return;
   }
-  else {
-    console.log('Connected to MySQL database!');
-  }
+  console.log('Connected to MySQL database!');
 });
 
-// POST /addSchool
+app.get('/', (req, res) => {
+  res.send('Welcome to School Management API!');
+});
+
 app.post('/addSchool', (req, res) => {
   const { name, address, latitude, longitude } = req.body;
-
   if (!name || !address || isNaN(latitude) || isNaN(longitude)) {
     return res.status(400).json({ error: 'Invalid input fields.' });
   }
@@ -47,12 +39,9 @@ app.post('/addSchool', (req, res) => {
   });
 });
 
-// GET /listSchools?lat=xx&lng=yy
-// GET /listSchools?lat=xx&lng=yy
 app.get('/listSchools', (req, res) => {
   const userLat = parseFloat(req.query.lat);
   const userLng = parseFloat(req.query.lng);
-
   if (isNaN(userLat) || isNaN(userLng)) {
     return res.status(400).json({ error: 'Invalid latitude or longitude' });
   }
@@ -69,21 +58,20 @@ app.get('/listSchools', (req, res) => {
     res.json(sortedSchools);
   });
 });
-// Haversine formula to calculate distance between two lat/lng points
+
 function calculateDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371; // Earth's radius in km
+  const R = 6371;
   const dLat = (lat2 - lat1) * (Math.PI / 180);
   const dLon = (lon2 - lon1) * (Math.PI / 180);
   const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(lat1 * (Math.PI / 180)) *
-          Math.cos(lat2 * (Math.PI / 180)) *
-          Math.sin(dLon / 2) *
-          Math.sin(dLon / 2);
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) *
+    Math.cos(lat2 * (Math.PI / 180)) *
+    Math.sin(dLon / 2) *
+    Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c; // Distance in kilometers
+  return R * c;
 }
-
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
