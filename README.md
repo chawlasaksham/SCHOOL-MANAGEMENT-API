@@ -5,7 +5,6 @@ A Node.js + Express + MySQL REST API to manage schools and find nearby ones usin
 ## 🚀 Setup
 
 1. **Clone & install**
-```bash
 git clone https://github.com/chawlasaksham/SCHOOL-MANAGEMENT-API.git
 cd SCHOOL-MANAGEMENT-API
 npm install
